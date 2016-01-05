@@ -37,6 +37,8 @@ module.exports = (grunt) ->
         if err then return done('Error executing suite "' + suiteId + '": ' + err)
         if passing
           grunt.log.ok('Suite "' + suiteId + '" passed.')
+          if !data.screenshotComparePassing
+            grunt.log.error('- Screenshot comparison failed')
           done()
         else
           done('Suite "' + suiteId + '" failed.')
@@ -56,6 +58,8 @@ module.exports = (grunt) ->
           if err then return done('Error executing test "' + data.test.name + '" (' + testId + '): ' + err)
           if passing
             grunt.log.ok('Test "' + data.test.name + '" (' + testId + ') passed.')
+            if !data.screenshotComparePassing
+              grunt.log.error('- Screenshot comparison failed')
             done()
           else
             done('Test "' + data.test.name + '" (' + testId + ') failed')

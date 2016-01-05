@@ -30,6 +30,9 @@ module.exports = function(grunt) {
         }
         if (passing) {
           grunt.log.ok('Suite "' + suiteId + '" passed.');
+          if (!data.screenshotComparePassing) {
+            grunt.log.error('- Screenshot comparison failed');
+          }
           return done();
         } else {
           return done('Suite "' + suiteId + '" failed.');
@@ -50,6 +53,9 @@ module.exports = function(grunt) {
           }
           if (passing) {
             grunt.log.ok('Test "' + data.test.name + '" (' + testId + ') passed.');
+            if (!data.screenshotComparePassing) {
+              grunt.log.error('- Screenshot comparison failed');
+            }
             return done();
           } else {
             return done('Test "' + data.test.name + '" (' + testId + ') failed');
