@@ -20,39 +20,43 @@ module.exports = (grunt) ->
     # create Ghost Inspector object
     GhostInspector = require('ghost-inspector')(options.apiKey)
 
-    # execute any specified suites
-    if suites.length then grunt.log.writeln('Executing suites...')
-    async.eachSeries suites, (suiteId, done) ->
-      # execute suite
-      GhostInspector.executeSuite suiteId, options, (err, data, passing) ->
-        # evaluate api response
-        if err then return done('Error executing suite "' + suiteId + '": ' + err)
+    executeTest = (testId, done) ->
+      GhostInspector.executeTest testId, options, (err, data, passing) ->
+        if err then return done('Error executing test "' + data.test.name + '" (' + testId + '): ' + err)
         if passing
-          grunt.log.ok('Suite "' + suiteId + '" passed.')
+          grunt.log.ok('Test "' + data.test.name + '" (' + testId + ') passed')
           if !data.screenshotComparePassing
             grunt.log.error('- Screenshot comparison failed')
           done()
         else
-          done('Suite "' + suiteId + '" failed.')
-    , (err) ->
+          grunt.log.error('Test "' + data.test.name + '" (' + testId + ') failed')
+          done()
 
+    gruntError = (err) ->
+      grunt.log.error(err)
+      return gruntDone(false)
+
+    # execute any specified suites
+    if suites.length then grunt.log.writeln('Executing suites...')
+    async.eachSeries suites, (suiteId, done) ->
+      grunt.log.writeln('Suite (' + suiteId + ')')
+      GhostInspector.getSuiteTests suiteId, (err, tests) ->
+        if err then return gruntError(err)
+
+        async.each tests, (test, done) ->
+          executeTest(test._id, done)
+        , (err) ->
+
+          # done with suites, bail if we hit an error
+          if err then return gruntError(err)
+    , (err) ->
       # done with suites, bail if we hit an error/failure
       if err then return gruntError(err)
 
       # execute any specified tests
       if tests.length then grunt.log.writeln('Executing tests...')
       async.eachSeries tests, (testId, done) ->
-        # execute test
-        GhostInspector.executeTest testId, options, (err, data, passing) ->
-          # evaluate api response
-          if err then return done('Error executing test "' + data.test.name + '" (' + testId + '): ' + err)
-          if passing
-            grunt.log.ok('Test "' + data.test.name + '" (' + testId + ') passed.')
-            if !data.screenshotComparePassing
-              grunt.log.error('- Screenshot comparison failed')
-            done()
-          else
-            done('Test "' + data.test.name + '" (' + testId + ') failed')
+        executeTest(testId, done)
       , (err) ->
 
         # done with tests, bail if we hit an error/failure
@@ -60,10 +64,6 @@ module.exports = (grunt) ->
 
         # done with suites and tests
         gruntDone()
-
-    gruntError = (err) ->
-      grunt.log.error(err)
-      return gruntDone(false)
 
 ensureArray = (items) ->
   if typeof items is 'string'
