@@ -12,18 +12,10 @@ module.exports = (grunt) ->
     options = @options()
 
     # get suites to execute
-    suites = @data.suites
-    if typeof suites is 'string'
-      suites = [suites]
-    else if suites not instanceof Array
-      suites = []
+    suites = ensureArray @data.suites
 
     # get tests to execute
-    tests = @data.tests
-    if typeof tests is 'string'
-      tests = [tests]
-    else if tests not instanceof Array
-      tests = []
+    tests = ensureArray @data.tests
 
     # create Ghost Inspector object
     GhostInspector = require('ghost-inspector')(options.apiKey)
@@ -72,3 +64,11 @@ module.exports = (grunt) ->
 
         # done with suites and tests
         gruntDone()
+
+ensureArray = (items) ->
+  if typeof items is 'string'
+    return [items]
+  else if items not instanceof Array
+    return []
+
+  items

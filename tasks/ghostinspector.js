@@ -1,4 +1,4 @@
-var async;
+var async, ensureArray;
 
 async = require('async');
 
@@ -7,18 +7,8 @@ module.exports = function(grunt) {
     var GhostInspector, gruntDone, options, suites, tests;
     gruntDone = this.async();
     options = this.options();
-    suites = this.data.suites;
-    if (typeof suites === 'string') {
-      suites = [suites];
-    } else if (!(suites instanceof Array)) {
-      suites = [];
-    }
-    tests = this.data.tests;
-    if (typeof tests === 'string') {
-      tests = [tests];
-    } else if (!(tests instanceof Array)) {
-      tests = [];
-    }
+    suites = ensureArray(this.data.suites);
+    tests = ensureArray(this.data.tests);
     GhostInspector = require('ghost-inspector')(options.apiKey);
     if (suites.length) {
       grunt.log.writeln('Executing suites...');
@@ -70,4 +60,13 @@ module.exports = function(grunt) {
       });
     });
   });
+};
+
+ensureArray = function(items) {
+  if (typeof items === 'string') {
+    return [items];
+  } else if (!(items instanceof Array)) {
+    return [];
+  }
+  return items;
 };
