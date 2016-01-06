@@ -37,9 +37,7 @@ module.exports = (grunt) ->
     , (err) ->
 
       # done with suites, bail if we hit an error/failure
-      if err
-        grunt.log.error(err)
-        return gruntDone(false)
+      if err then return gruntError(err)
 
       # execute any specified tests
       if tests.length then grunt.log.writeln('Executing tests...')
@@ -58,12 +56,14 @@ module.exports = (grunt) ->
       , (err) ->
 
         # done with tests, bail if we hit an error/failure
-        if err
-          grunt.log.error(err)
-          return gruntDone(false)
+        if err then return gruntError(err)
 
         # done with suites and tests
         gruntDone()
+
+    gruntError = (err) ->
+      grunt.log.error(err)
+      return gruntDone(false)
 
 ensureArray = (items) ->
   if typeof items is 'string'

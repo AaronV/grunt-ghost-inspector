@@ -4,7 +4,7 @@ async = require('async');
 
 module.exports = function(grunt) {
   return grunt.registerMultiTask('ghostinspector', 'Execute your Ghost Inspector tests', function() {
-    var GhostInspector, gruntDone, options, suites, tests;
+    var GhostInspector, gruntDone, gruntError, options, suites, tests;
     gruntDone = this.async();
     options = this.options();
     suites = ensureArray(this.data.suites);
@@ -13,7 +13,7 @@ module.exports = function(grunt) {
     if (suites.length) {
       grunt.log.writeln('Executing suites...');
     }
-    return async.eachSeries(suites, function(suiteId, done) {
+    async.eachSeries(suites, function(suiteId, done) {
       return GhostInspector.executeSuite(suiteId, options, function(err, data, passing) {
         if (err) {
           return done('Error executing suite "' + suiteId + '": ' + err);
@@ -30,8 +30,7 @@ module.exports = function(grunt) {
       });
     }, function(err) {
       if (err) {
-        grunt.log.error(err);
-        return gruntDone(false);
+        return gruntError(err);
       }
       if (tests.length) {
         grunt.log.writeln('Executing tests...');
@@ -53,12 +52,15 @@ module.exports = function(grunt) {
         });
       }, function(err) {
         if (err) {
-          grunt.log.error(err);
-          return gruntDone(false);
+          return gruntError(err);
         }
         return gruntDone();
       });
     });
+    return gruntError = function(err) {
+      grunt.log.error(err);
+      return gruntDone(false);
+    };
   });
 };
 
