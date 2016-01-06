@@ -34,6 +34,9 @@ module.exports = (grunt) ->
         tests: ['53cf58fc350c6c41029a11bf']
         options:
           startUrl: 'https://www.google.com.br'
+      test4:
+        suites: ['53cf58c0350c6c41029a11be'],
+        tests: ['53cf58fc350c6c41029a11bf', '53cf59e0350c6c41029a11c0']
 
 
   # Build project

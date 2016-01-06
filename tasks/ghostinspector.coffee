@@ -27,10 +27,9 @@ module.exports = (grunt) ->
           grunt.log.ok('Test "' + data.test.name + '" (' + testId + ') passed')
           if !data.screenshotComparePassing
             grunt.log.error('- Screenshot comparison failed')
-          done()
         else
           grunt.log.error('Test "' + data.test.name + '" (' + testId + ') failed')
-          done()
+        done()
 
     gruntError = (err) ->
       grunt.log.error(err)
@@ -46,9 +45,10 @@ module.exports = (grunt) ->
         async.each tests, (test, done) ->
           executeTest(test._id, done)
         , (err) ->
-
           # done with suites, bail if we hit an error
           if err then return gruntError(err)
+          done()
+
     , (err) ->
       # done with suites, bail if we hit an error/failure
       if err then return gruntError(err)

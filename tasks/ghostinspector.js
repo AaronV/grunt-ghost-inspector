@@ -20,11 +20,10 @@ module.exports = function(grunt) {
           if (!data.screenshotComparePassing) {
             grunt.log.error('- Screenshot comparison failed');
           }
-          return done();
         } else {
           grunt.log.error('Test "' + data.test.name + '" (' + testId + ') failed');
-          return done();
         }
+        return done();
       });
     };
     gruntError = function(err) {
@@ -46,6 +45,7 @@ module.exports = function(grunt) {
           if (err) {
             return gruntError(err);
           }
+          return done();
         });
       });
     }, function(err) {
