@@ -12,22 +12,31 @@ module.exports = function(grunt) {
     GhostInspector = require('ghost-inspector')(options.apiKey);
     executeTest = function(testId, done) {
       return GhostInspector.executeTest(testId, options, function(err, data, passing) {
+        var errorText;
         if (err) {
           return done('Error executing test "' + data.test.name + '" (' + testId + '): ' + err);
         }
         if (passing) {
           grunt.log.ok('Test "' + data.test.name + '" (' + testId + ') passed');
           if (!data.screenshotComparePassing) {
-            grunt.log.error('- Screenshot comparison failed');
+            errorText = '- Screenshot comparison failed';
+            grunt.log.error(errorText);
+            if (options.abortOnScreenshotFailure) {
+              gruntError(errorText);
+            }
           }
         } else {
-          grunt.log.error('Test "' + data.test.name + '" (' + testId + ') failed');
+          errorText = 'Test "' + data.test.name + '" (' + testId + ') failed';
+          grunt.log.error(errorText);
+          if (options.abortOnTestFailure) {
+            gruntError(errorText);
+          }
         }
         return done();
       });
     };
     gruntError = function(err) {
-      grunt.log.error(err);
+      grunt.fail.warn(err);
       return gruntDone(false);
     };
     if (suites.length) {

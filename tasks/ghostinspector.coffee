@@ -26,13 +26,20 @@ module.exports = (grunt) ->
         if passing
           grunt.log.ok('Test "' + data.test.name + '" (' + testId + ') passed')
           if !data.screenshotComparePassing
-            grunt.log.error('- Screenshot comparison failed')
+            errorText = '- Screenshot comparison failed'
+            grunt.log.error(errorText)
+            if options.abortOnScreenshotFailure
+              gruntError(errorText)
         else
-          grunt.log.error('Test "' + data.test.name + '" (' + testId + ') failed')
+          errorText = 'Test "' + data.test.name + '" (' + testId + ') failed'
+          grunt.log.error(errorText)
+          if options.abortOnTestFailure
+            gruntError(errorText)
+
         done()
 
     gruntError = (err) ->
-      grunt.log.error(err)
+      grunt.fail.warn(err)
       return gruntDone(false)
 
     # execute any specified suites

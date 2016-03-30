@@ -28,7 +28,9 @@ In your project's Gruntfile, add a section named `ghostinspector` to the data ob
 grunt.initConfig({
   ghostinspector: {
     options: {
-      apiKey: 'api-key',  // The API key for your Ghost Inspector account
+      apiKey: 'api-key',                // The API key for your Ghost Inspector account
+      abortOnTestFailure: true          // (default: false) Grunt will return a failure if a test fails
+      abortOnScreenshotFailure: true    // (default: false) Grunt will return a failure if a screenshot test fails
     },
     production: {
       suites: ['suite-id-1', 'suite-id-2', ...],  // IDs of any suites to execute
