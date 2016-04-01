@@ -17,6 +17,12 @@ module.exports = (grunt) ->
     # get tests to execute
     tests = ensureArray @data.tests
 
+    # stored failures during execution
+    failures = {
+      tests: []
+      screenshots: []
+    }
+
     # create Ghost Inspector object
     GhostInspector = require('ghost-inspector')(options.apiKey)
 
@@ -28,19 +34,26 @@ module.exports = (grunt) ->
           if !data.screenshotComparePassing
             errorText = '- Screenshot comparison failed'
             grunt.log.error(errorText)
-            if options.abortOnScreenshotFailure
-              gruntError(errorText)
+            failures.screenshots.push(['screenshot', errorText])
         else
           errorText = 'Test "' + data.test.name + '" (' + testId + ') failed'
           grunt.log.error(errorText)
-          if options.abortOnTestFailure
-            gruntError(errorText)
+          failures.tests.push(['test', errorText])
 
         done()
 
     gruntError = (err) ->
-      grunt.fail.warn(err)
-      return gruntDone(false)
+      grunt.log.error(err)
+      return finishRun(false)
+
+    finishRun = (status) ->
+      if options.abortOnTestFailure && failures.tests.length > 0
+        grunt.fail.warn(failures.tests.length + ' had errors')
+
+      if options.abortOnScreenshotFailure && failures.screenshots.length > 0
+        grunt.fail.warn(failures.screenshots.length + ' had errors')
+
+      gruntDone(status)
 
     # execute any specified suites
     if suites.length then grunt.log.writeln('Executing suites...')
@@ -70,7 +83,7 @@ module.exports = (grunt) ->
         if err then return gruntError(err)
 
         # done with suites and tests
-        gruntDone()
+        finishRun()
 
 ensureArray = (items) ->
   if typeof items is 'string'

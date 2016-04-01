@@ -4,11 +4,15 @@ async = require('async');
 
 module.exports = function(grunt) {
   return grunt.registerMultiTask('ghostinspector', 'Execute your Ghost Inspector tests', function() {
-    var GhostInspector, executeTest, gruntDone, gruntError, options, suites, tests;
+    var GhostInspector, executeTest, failures, finishRun, gruntDone, gruntError, options, suites, tests;
     gruntDone = this.async();
     options = this.options();
     suites = ensureArray(this.data.suites);
     tests = ensureArray(this.data.tests);
+    failures = {
+      tests: [],
+      screenshots: []
+    };
     GhostInspector = require('ghost-inspector')(options.apiKey);
     executeTest = function(testId, done) {
       return GhostInspector.executeTest(testId, options, function(err, data, passing) {
@@ -21,23 +25,28 @@ module.exports = function(grunt) {
           if (!data.screenshotComparePassing) {
             errorText = '- Screenshot comparison failed';
             grunt.log.error(errorText);
-            if (options.abortOnScreenshotFailure) {
-              gruntError(errorText);
-            }
+            failures.screenshots.push(['screenshot', errorText]);
           }
         } else {
           errorText = 'Test "' + data.test.name + '" (' + testId + ') failed';
           grunt.log.error(errorText);
-          if (options.abortOnTestFailure) {
-            gruntError(errorText);
-          }
+          failures.tests.push(['test', errorText]);
         }
         return done();
       });
     };
     gruntError = function(err) {
-      grunt.fail.warn(err);
-      return gruntDone(false);
+      grunt.log.error(err);
+      return finishRun(false);
+    };
+    finishRun = function(status) {
+      if (options.abortOnTestFailure && failures.tests.length > 0) {
+        grunt.fail.warn(failures.tests.length + ' had errors');
+      }
+      if (options.abortOnScreenshotFailure && failures.screenshots.length > 0) {
+        grunt.fail.warn(failures.screenshots.length + ' had errors');
+      }
+      return gruntDone(status);
     };
     if (suites.length) {
       grunt.log.writeln('Executing suites...');
@@ -70,7 +79,7 @@ module.exports = function(grunt) {
         if (err) {
           return gruntError(err);
         }
-        return gruntDone();
+        return finishRun();
       });
     });
   });
