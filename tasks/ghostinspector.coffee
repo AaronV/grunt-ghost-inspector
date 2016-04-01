@@ -31,7 +31,7 @@ module.exports = (grunt) ->
         if err then return done('Error executing test "' + data.test.name + '" (' + testId + '): ' + err)
         if passing
           grunt.log.ok('Test "' + data.test.name + '" (' + testId + ') passed')
-          if !data.screenshotComparePassing
+          if data.screenshotComparePassing == false
             errorText = '- Screenshot comparison failed'
             grunt.log.error(errorText)
             failures.screenshots.push(['screenshot', errorText])
