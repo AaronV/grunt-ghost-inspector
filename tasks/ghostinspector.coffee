@@ -58,16 +58,17 @@ module.exports = (grunt) ->
     # execute any specified suites
     if suites.length then grunt.log.writeln('Executing suites...')
     async.eachSeries suites, (suiteId, done) ->
-      grunt.log.writeln('Suite (' + suiteId + ')')
-      GhostInspector.getSuiteTests suiteId, (err, tests) ->
-        if err then return gruntError(err)
-
-        async.each tests, (test, done) ->
-          executeTest(test._id, done)
-        , (err) ->
-          # done with suites, bail if we hit an error
+      GhostInspector.getSuite suiteId, (err, suite) ->
+        grunt.log.writeln('Suite "' + suite.name + '" (' + suiteId + ')')
+        GhostInspector.getSuiteTests suiteId, (err, tests) ->
           if err then return gruntError(err)
-          done()
+
+          async.each tests, (test, done) ->
+            executeTest(test._id, done)
+          , (err) ->
+            # done with suites, bail if we hit an error
+            if err then return gruntError(err)
+            done()
 
     , (err) ->
       # done with suites, bail if we hit an error/failure

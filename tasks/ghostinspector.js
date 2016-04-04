@@ -52,18 +52,20 @@ module.exports = function(grunt) {
       grunt.log.writeln('Executing suites...');
     }
     return async.eachSeries(suites, function(suiteId, done) {
-      grunt.log.writeln('Suite (' + suiteId + ')');
-      return GhostInspector.getSuiteTests(suiteId, function(err, tests) {
-        if (err) {
-          return gruntError(err);
-        }
-        return async.each(tests, function(test, done) {
-          return executeTest(test._id, done);
-        }, function(err) {
+      return GhostInspector.getSuite(suiteId, function(err, suite) {
+        grunt.log.writeln('Suite "' + suite.name + '" (' + suiteId + ')');
+        return GhostInspector.getSuiteTests(suiteId, function(err, tests) {
           if (err) {
             return gruntError(err);
           }
-          return done();
+          return async.each(tests, function(test, done) {
+            return executeTest(test._id, done);
+          }, function(err) {
+            if (err) {
+              return gruntError(err);
+            }
+            return done();
+          });
         });
       });
     }, function(err) {
